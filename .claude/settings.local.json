@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:justtcg.com)",
+      "WebFetch(domain:tcgtracking.com)",
+      "WebFetch(domain:tcgpricelookup.com)",
+      "WebFetch(domain:www.echomtg.com)",
+      "WebFetch(domain:tcgapis.com)",
+      "WebFetch(domain:scryfall.com)",
+      "PowerShell($r = Invoke-RestMethod -Uri \"https://tcgtracking.com/tcgapi/v1/1/sets\" -Method Get -ErrorAction Stop; $r.sets | Sort-Object -Property released_on -Descending | Select-Object -First 15 | Format-Table id, abbreviation, name, released_on, product_count -AutoSize)",
+      "PowerShell($r = Invoke-RestMethod -Uri \"https://tcgtracking.com/tcgapi/v1/1/sets\" -Method Get -ErrorAction Stop; $r.sets[0] | ConvertTo-Json -Depth 3; \"---\"; \"TOTAL SETS: $\\($r.sets.Count\\)\")",
+      "PowerShell($r = Invoke-RestMethod -Uri \"https://tcgtracking.com/tcgapi/v1/1/sets\" -Method Get -ErrorAction Stop; $r.sets | Where-Object { $_.published_on -and \\([datetime]$_.published_on\\) -le \\(Get-Date\\) } | Sort-Object -Property { [datetime]$_.published_on } -Descending | Select-Object -First 15 | Format-Table id, abbreviation, name, published_on, sku_count -AutoSize)",
+      "PowerShell($r = Invoke-RestMethod -Uri \"https://tcgtracking.com/tcgapi/v1/1/sets\" -Method Get -ErrorAction Stop; $r.sets | Where-Object { $_.abbreviation -and -not $_.is_supplemental -and $_.product_count -gt 200 -and $_.product_count -lt 600 -and $_.published_on -and \\([datetime]$_.published_on\\) -le \\(Get-Date\\) } | Sort-Object -Property { [datetime]$_.published_on } -Descending | Select-Object -First 15 | Format-Table id, abbreviation, name, published_on, product_count -AutoSize)",
+      "PowerShell($skus = Invoke-RestMethod -Uri \"https://tcgtracking.com/tcgapi/v1/1/sets/24601/skus\" -Method Get -ErrorAction Stop; \"FIELDS ON ROOT:\"; \\($skus | Get-Member -MemberType NoteProperty\\).Name -join \", \"; \"---\"; \"PRODUCT COUNT: $\\($skus.products.Count\\)\"; \"---\"; \"FIRST PRODUCT \\(shape\\):\"; $skus.products[0] | ConvertTo-Json -Depth 6)",
+      "PowerShell($set = Invoke-RestMethod -Uri \"https://tcgtracking.com/tcgapi/v1/1/sets/24601\" -Method Get -ErrorAction Stop; \"FIELDS:\"; \\($set | Get-Member -MemberType NoteProperty\\).Name -join \", \"; \"---\"; \"First product:\"; $set.products[0] | ConvertTo-Json -Depth 4)",
+      "WebFetch(domain:www.tcgplayer.com)"
+    ]
+  }
+}
