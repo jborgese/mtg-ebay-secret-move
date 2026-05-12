@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Empty: allow everything by default; refine when adding sensitive stores. -->
+    </cloud-backup>
+    <device-transfer>
+    </device-transfer>
+</data-extraction-rules>

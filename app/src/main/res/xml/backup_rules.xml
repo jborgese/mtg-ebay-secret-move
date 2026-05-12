@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- v1: opt everything in. Token storage uses EncryptedSharedPreferences (Phase 6),
+         which we'll explicitly exclude from backups when added. -->
+</full-backup-content>

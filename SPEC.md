@@ -59,8 +59,14 @@ Single user — the card owner and seller. The app is not designed for distribut
 - **Language:** Kotlin (native Android)
 - **Minimum SDK:** API 29 (Android 10)
 - **Camera:** CameraX
+- **Computer vision:** OpenCV for Android (card-edge detection, perspective correction) + custom DCT-based pHash in Kotlin (~64-bit)
 - **Local storage:** Room (SQLite) for draft listings; EncryptedSharedPreferences for the eBay user token
 - **Networking:** OkHttp + Retrofit + kotlinx.serialization
+- **Build flavors:** `sandbox` (default for dev) and `prod` — different eBay base URLs and which token slot is read
+
+### Sub-projects
+
+- **`phash-db-generator/`** — standalone script (Python or Kotlin), run on a dev machine, that downloads Scryfall bulk data + card images and produces `phash.bin` (~1.5 MB) bundled as an Android asset. Regenerated per set release.
 
 ---
 
@@ -69,13 +75,34 @@ Single user — the card owner and seller. The app is not designed for distribut
 ### 1. Card Scanning
 
 - Use the device camera to capture a card image
-- Identify the card via **image-hash matching against Scryfall's perceptual hashes (pHash)**
+- Identify the card via **perceptual-hash (pHash) matching against a locally-bundled hash database**
 - Must support all English card variants:
   - Standard, foil, alternate art, borderless, extended art, showcase, collector's edition, etc.
 - **Foil status is always confirmed by the user after scan** (single Y/N prompt — pHash cannot reliably detect foil from one photo)
 - English-only cards in v1
 
+**Why we build our own pHash DB:** Scryfall publishes card images but does **not** publish perceptual hashes. The two well-known open-source MTG scanners (tmikonen/magic_card_detector, ForOhForError/YamCR) either cover only a small set of cards (Alpha, Old School) or compute hashes on-demand at first run from Scryfall — neither ships a maintained all-English-cards pHash DB suitable for Android. So we build a small one ourselves.
+
+#### pHash DB generator (separate sub-project)
+
+A small standalone tool (Python or Kotlin script, run on a dev machine — not on the phone) that:
+
+1. Downloads Scryfall's `default-cards` bulk data (all English printings, JSON)
+2. For each card, fetches the `normal`-size image URL
+3. Detects/crops the card art region, normalizes orientation, computes a 64-bit DCT-based pHash
+4. Outputs a compact binary file: `{phash: u64, scryfall_id: 16 bytes, finishes: u8, set_code: 8 bytes, collector_number: 8 bytes}` ≈ ~40 bytes/card × ~35k English printings ≈ **~1.5 MB total**
+5. Bundled as an Android asset; regenerated and re-released when a new set ships
+
+#### On-device matching
+
+1. CameraX captures a frame, runs lightweight card-edge detection
+2. Perspective-correct to canonical size, compute the same 64-bit pHash
+3. Find nearest neighbors in the embedded DB by Hamming distance; pick the closest match below a threshold
+4. Surface the top match (and 2–3 runners-up so the user can correct mis-identification of similar art)
+
 **Manual search fallback** (if scan fails or user prefers): search by card name → pick set → pick variant. Backed by the Scryfall API.
+
+**References (algorithm only — not used as dependencies):** [tmikonen/magic_card_detector](https://github.com/tmikonen/magic_card_detector) (MIT), [ForOhForError/YamCR](https://github.com/ForOhForError/Yet-Another-Magic-Card-Recognizer) (Apache-2.0).
 
 ---
 
@@ -135,13 +162,35 @@ All fields are editable before publishing.
 
 - **Authentication:** Manual eBay user token (long-lived, generated from eBay developer portal), stored in EncryptedSharedPreferences. No backend required.
 - **Token expiry warning:** Tokens last ~18 months. App shows an in-app banner on the home screen starting 30 days before expiry, prompting the user to refresh the token.
+- **Environment:** Development targets the **eBay Sandbox** (separate sandbox user token, sandbox base URL). Production is a build-flavor flip — same code path, different base URL + token. No live listings are created during development.
 - **API:** eBay **Inventory API + Offer** endpoints
+- **Category:** MTG single cards use eBay US category **38292** ("Magic: The Gathering > MTG Individual Cards"). Verified at first run via the Taxonomy API (`/category_tree/0/get_category_suggestions`) in case eBay reorganizes the tree; the discovered ID is cached locally.
 - **Prerequisite:** Payment, return, and fulfillment business policies must already be configured on the seller's eBay account. App pulls policy IDs via the Account API on first run and reuses them.
 - **Item location & handling time:** Pulled from the eBay seller account profile (origin ZIP + default handling time) on first run and cached locally. No manual entry in the app.
-- **Listing title:** Auto-generated as `{Card Name} - {Set Name} - MTG Magic the Gathering{ - Foil}{ - Condition}`, truncated to eBay's 80-char limit. User can edit on the review screen.
+- **Listing title:** Auto-generated as `{Card Name} - {Set Name} - MTG Magic the Gathering{ - Foil}{ - Condition}`, truncated to eBay's 80-char limit. **Truncation order when over 80 chars:** drop Condition → drop the literal "MTG" → truncate Set Name (preserving leading words) → finally truncate Card Name (last resort; never drop entirely). User can edit on the review screen.
 - **Auction defaults:** 7-day duration, no reserve, returns not accepted
 - **Shipping:** Calculated rate by buyer ZIP; package weight chosen per listing
 - Listing is **not published until the user explicitly confirms** on the review screen
+
+#### Item-specifics mapping (Scryfall → eBay)
+
+A small, mechanical mapping module converts Scryfall card data into eBay's required trading-card item specifics. Documented as a single source-of-truth table:
+
+| eBay item specific | Source | Example |
+|---|---|---|
+| Game | Hardcoded | `Magic: The Gathering` |
+| Set | Scryfall `set_name` | `Secrets of Strixhaven` |
+| Card Name | Scryfall `name` | `Erode` |
+| Card Number | Scryfall `collector_number` | `123` |
+| Rarity | Scryfall `rarity` (mapped: `common`→`Common`, etc.) | `Rare` |
+| Color | Scryfall `colors` (joined; empty → `Colorless`) | `Blue` |
+| Finish | User foil confirmation | `Foil` / `Regular` |
+| Language | Hardcoded (English-only in v1) | `English` |
+| Card Condition | User selection | `Near Mint or Better` (mapped from NM/LP/MP/HP) |
+| Features | Derived from Scryfall `frame_effects`, `promo_types` (best-effort) | `Extended Art`, `Borderless`, `Showcase` |
+| Card Type | Scryfall `type_line` (first token before `—`) | `Creature` |
+
+Treat anything missing from Scryfall as omitted rather than guessed.
 
 #### Publish failure handling — local drafts
 
@@ -176,9 +225,9 @@ If a publish call fails (network, validation, rate limit), the listing is saved 
 
 | Service | Purpose | Cost |
 |---|---|---|
-| Scryfall API | Card identification (pHash), metadata, manual search, image URLs, NM fallback pricing | Free |
+| Scryfall API + bulk-data | Card metadata, manual search, image URLs, NM fallback pricing; bulk `default-cards` JSON consumed offline by `phash-db-generator` | Free |
 | TCGTracking Open TCG API | Primary condition-specific MTG pricing (NM/LP/MP/HP, foil split) | Free, no auth |
-| eBay Sell API (Inventory + Offer + Account) | Create auction listings, fetch policies | Free (requires developer account + user token) |
+| eBay Sell API (Inventory + Offer + Account + Taxonomy) | Create auction listings, fetch business policies + account profile, verify category ID | Free (requires developer account + user token) |
 
 ---
 
@@ -213,6 +262,18 @@ Per eBay's current API requirements (as of May 2026):
 | Listing history | Nice-to-have, deferred |
 | Multiple eBay accounts | Single seller account only |
 | Backend server | All client-side; manual token auth |
+
+---
+
+## Setup Prerequisites (before first run)
+
+Documented in `README.md` as a one-time setup runbook for the seller:
+
+1. **eBay developer account.** Register at developer.ebay.com; create an application; record App ID, Dev ID, Cert ID.
+2. **eBay sandbox + production user tokens.** From the developer portal, run "Get a User Token" for both environments. Paste each into the app's settings screen on first run.
+3. **eBay business policies (production only).** Confirm payment, return, and fulfillment business policies exist on the seller account. App discovers policy IDs at first run via the Account API.
+4. **Android dev environment.** Physical Android device (confirmed available) with USB debugging enabled — camera + image recognition are not testable in emulator.
+5. **`phash-db-generator` first run.** Generate the initial `phash.bin` asset before the first APK build; re-run when a new MTG set ships.
 
 ---
 
