@@ -1,0 +1,9 @@
+scryfall_id: 30f9c266-f32e-4483-9709-f83675331688
+name: Chandra's Embercat
+set: m20
+collector_number: 129
+layout: normal
+full_art_or_borderless: False
+finishes: nonfoil,foil
+source_image: 30f9c266-f32e-4483-9709-f83675331688.jpg
+expected_phash: 0xc6ee4eccac0ad1b1

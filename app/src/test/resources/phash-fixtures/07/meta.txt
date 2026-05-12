@@ -1,0 +1,9 @@
+scryfall_id: 23e5bc9c-490b-4873-8be1-bd39ab10ed86
+name: Chaos Warp
+set: pip
+collector_number: 994
+layout: normal
+full_art_or_borderless: False
+finishes: foil
+source_image: 23e5bc9c-490b-4873-8be1-bd39ab10ed86.jpg
+expected_phash: 0xd6ceb66670386349

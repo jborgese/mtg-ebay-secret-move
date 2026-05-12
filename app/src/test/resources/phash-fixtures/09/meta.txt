@@ -1,0 +1,9 @@
+scryfall_id: bea12617-ebaa-45f6-a2e8-b71190708129
+name: Phyrexian Broodstar
+set: unk
+collector_number: RU08
+layout: normal
+full_art_or_borderless: False
+finishes: nonfoil
+source_image: bea12617-ebaa-45f6-a2e8-b71190708129.jpg
+expected_phash: 0x3ba4b56ba4285bc5

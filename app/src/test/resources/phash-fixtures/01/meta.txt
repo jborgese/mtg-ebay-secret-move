@@ -1,0 +1,9 @@
+scryfall_id: 26e07454-2cca-4b9e-b175-e97c65b0d7b5
+name: Baleful Mastery
+set: plst
+collector_number: STX-64
+layout: normal
+full_art_or_borderless: False
+finishes: nonfoil
+source_image: 26e07454-2cca-4b9e-b175-e97c65b0d7b5.jpg
+expected_phash: 0xc32ed35611e82d73

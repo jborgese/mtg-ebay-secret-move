@@ -18,7 +18,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "PowerShell(.\\\\gradlew.bat --version 2>&1)",
       "PowerShell(.\\\\gradlew.bat :app:tasks --quiet 2>&1)",
-      "PowerShell(.\\\\gradlew.bat :app:assembleSandboxDebug 2>&1)"
+      "PowerShell(.\\\\gradlew.bat :app:assembleSandboxDebug 2>&1)",
+      "PowerShell(.\\\\gradlew.bat :app:testSandboxDebugUnitTest --tests \"com.mtgebay.app.scan.PhasherTest\" 2>&1)"
     ]
   }
 }
