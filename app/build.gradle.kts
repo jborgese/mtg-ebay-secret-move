@@ -175,6 +175,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    // WorkManager + DataStore (Phase 5: draft cleanup + soft-cap warning flag)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.datastore.preferences)
+
     // Unit tests
     testImplementation(libs.junit)
     testImplementation(libs.okhttp.mockwebserver)
