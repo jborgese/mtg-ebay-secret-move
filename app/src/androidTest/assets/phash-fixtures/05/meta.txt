@@ -1,0 +1,9 @@
+scryfall_id: 4e74c620-a445-46a4-a1aa-b5b8ef657f18
+name: Swamp
+set: xln
+collector_number: 269
+layout: normal
+full_art_or_borderless: False
+finishes: nonfoil,foil
+source_image: 4e74c620-a445-46a4-a1aa-b5b8ef657f18.jpg
+expected_phash: 0x27996699c6b36c19

@@ -28,6 +28,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+
+        // OpenCV ships native libs (~35MB) for arm64-v8a, armeabi-v7a, x86, x86_64.
+        // Personal/sideloaded use: ship only arm64-v8a (every consumer Android phone since 2017).
+        ndk { abiFilters += "arm64-v8a" }
     }
 
     signingConfigs {
@@ -132,6 +136,9 @@ dependencies {
     // Kotlinx (used app-wide from Phase 3 onward; no harm keeping baseline now)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
+
+    // OpenCV (Phase 2c+: BitmapPhasher; Phase 2d: CardDetector)
+    implementation(libs.opencv)
 
     // Unit tests
     testImplementation(libs.junit)

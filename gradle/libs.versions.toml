@@ -71,6 +71,9 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 
+# OpenCV for Android (Phase 2c+)
+opencv = { group = "org.opencv", name = "opencv", version.ref = "opencv" }
+
 # Retrofit / OkHttp (Phase 3)
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter-kotlinx-serialization = { group = "com.squareup.retrofit2", name = "converter-kotlinx-serialization", version.ref = "retrofit" }

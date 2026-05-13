@@ -1,0 +1,9 @@
+scryfall_id: 56169747-9603-431e-bd88-bfa6982f029c
+name: Toralf, God of Fury // Toralf's Hammer
+set: pkhm
+collector_number: 154s
+layout: modal_dfc
+full_art_or_borderless: False
+finishes: foil
+source_image: 56169747-9603-431e-bd88-bfa6982f029c.jpg
+expected_phash: 0x85831e3cd9a3b743

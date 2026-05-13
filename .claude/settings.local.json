@@ -20,7 +20,10 @@
       "PowerShell(.\\\\gradlew.bat :app:tasks --quiet 2>&1)",
       "PowerShell(.\\\\gradlew.bat :app:assembleSandboxDebug 2>&1)",
       "PowerShell(.\\\\gradlew.bat :app:testSandboxDebugUnitTest --tests \"com.mtgebay.app.scan.PhasherTest\" 2>&1)",
-      "PowerShell(.\\\\gradlew.bat :app:testSandboxDebugUnitTest 2>&1)"
+      "PowerShell(.\\\\gradlew.bat :app:testSandboxDebugUnitTest 2>&1)",
+      "WebFetch(domain:central.sonatype.com)",
+      "WebFetch(domain:repo1.maven.org)",
+      "PowerShell(.\\\\gradlew.bat :app:assembleSandboxDebugAndroidTest 2>&1)"
     ]
   }
 }
