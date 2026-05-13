@@ -138,6 +138,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Kotlinx (used app-wide from Phase 3 onward; no harm keeping baseline now)
@@ -149,6 +150,10 @@ dependencies {
 
     // ML Kit Document Scanner (Phase 2e: edge detection + perspective correction)
     implementation(libs.mlkit.document.scanner)
+
+    // Coil 3 (Phase 3c: card thumbnails from Scryfall image URLs)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     // Networking (Phase 3a: Scryfall client; Phase 4: TCGTracking; Phase 6: eBay)
     implementation(libs.retrofit)
