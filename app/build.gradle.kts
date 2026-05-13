@@ -107,6 +107,11 @@ android {
         }
     }
 
+    androidResources {
+        // Keep phash.bin uncompressed so PhashDb can memory-map it directly out of the APK.
+        noCompress.add("bin")
+    }
+
     packaging {
         resources {
             excludes += setOf(
@@ -122,6 +127,7 @@ dependencies {
     // AndroidX core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
 
@@ -137,8 +143,11 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
 
-    // OpenCV (Phase 2c+: BitmapPhasher; Phase 2d: CardDetector)
+    // OpenCV (Phase 2c+: BitmapPhasher pipeline — grayscale + Lanczos resize)
     implementation(libs.opencv)
+
+    // ML Kit Document Scanner (Phase 2e: edge detection + perspective correction)
+    implementation(libs.mlkit.document.scanner)
 
     // Unit tests
     testImplementation(libs.junit)

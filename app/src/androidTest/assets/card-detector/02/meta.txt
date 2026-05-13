@@ -1,9 +1,0 @@
-scryfall_id: 08a2aea9-8b3a-4be3-aaa0-4c4a19f63d02
-name: Mountain
-set: sld
-collector_number: 566
-layout: normal
-full_art_or_borderless: False
-finishes: foil
-source_image: 08a2aea9-8b3a-4be3-aaa0-4c4a19f63d02.jpg
-expected_phash: 0x78cac2242cb4d7dd

@@ -1,9 +1,0 @@
-scryfall_id: df72c35b-168a-45e3-b1f1-4f1c69d37eb1
-name: War Room
-set: pcmr
-collector_number: 361p
-layout: normal
-full_art_or_borderless: False
-finishes: nonfoil,foil
-source_image: df72c35b-168a-45e3-b1f1-4f1c69d37eb1.jpg
-expected_phash: 0x6ecd268c833ef033
