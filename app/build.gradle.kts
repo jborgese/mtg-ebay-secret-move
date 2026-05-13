@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 // Load keystore.properties if present (kept out of git via .gitignore)
@@ -155,9 +156,16 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
 
+    // Room (Phase 3b: Scryfall card cache; Phase 5: drafts table)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
     // Unit tests
     testImplementation(libs.junit)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.mockk)
+    androidTestImplementation(libs.androidx.room.testing)
 
     // Instrumented tests
     androidTestImplementation(libs.androidx.test.junit)
