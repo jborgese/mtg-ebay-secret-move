@@ -149,8 +149,15 @@ dependencies {
     // ML Kit Document Scanner (Phase 2e: edge detection + perspective correction)
     implementation(libs.mlkit.document.scanner)
 
+    // Networking (Phase 3a: Scryfall client; Phase 4: TCGTracking; Phase 6: eBay)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+
     // Unit tests
     testImplementation(libs.junit)
+    testImplementation(libs.okhttp.mockwebserver)
 
     // Instrumented tests
     androidTestImplementation(libs.androidx.test.junit)
