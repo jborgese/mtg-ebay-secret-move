@@ -23,11 +23,13 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -42,6 +44,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.mtgebay.app.data.scryfall.ScryfallCard
+import com.mtgebay.app.pricing.BidCalculator
+import com.mtgebay.app.pricing.CardCondition
+import com.mtgebay.app.pricing.PriceResult
 
 /**
  * Manual card search screen. Three sub-states the UI renders linearly:
@@ -71,7 +76,17 @@ fun ManualSearchScreen(
 
         when {
             state.pickedCard != null ->
-                PickedCardPanel(card = state.pickedCard!!, onBack = viewModel::clearSelection)
+                PickedCardPanel(
+                    card = state.pickedCard!!,
+                    condition = state.pickedCondition,
+                    foil = state.pickedFoil,
+                    pricing = state.pricing,
+                    pricingLoading = state.pricingLoading,
+                    pricingError = state.pricingError,
+                    onConditionChanged = viewModel::onConditionChanged,
+                    onFoilChanged = viewModel::onFoilChanged,
+                    onBack = viewModel::clearSelection,
+                )
 
             state.loadingPrintings ->
                 LoadingRow("Loading printings…")
@@ -214,8 +229,19 @@ private fun PrintingRow(card: ScryfallCard, onClick: () -> Unit) {
 }
 
 @Composable
-private fun PickedCardPanel(card: ScryfallCard, onBack: () -> Unit) {
+private fun PickedCardPanel(
+    card: ScryfallCard,
+    condition: CardCondition,
+    foil: Boolean,
+    pricing: PriceResult?,
+    pricingLoading: Boolean,
+    pricingError: String?,
+    onConditionChanged: (CardCondition) -> Unit,
+    onFoilChanged: (Boolean) -> Unit,
+    onBack: () -> Unit,
+) {
     val imageUrl = card.imageUris?.normal ?: card.cardFaces?.firstOrNull()?.imageUris?.normal
+    val canChooseFoil = card.finishes.size > 1
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -238,19 +264,89 @@ private fun PickedCardPanel(card: ScryfallCard, onBack: () -> Unit) {
                         .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Fit,
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
             }
+
+            Text("Condition", style = MaterialTheme.typography.titleSmall)
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                CardCondition.entries.forEach { c ->
+                    FilterChip(
+                        selected = condition == c,
+                        onClick = { onConditionChanged(c) },
+                        label = { Text(c.tcgCode) },
+                    )
+                }
+            }
+
+            if (canChooseFoil) {
+                Spacer(Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Switch(checked = foil, onCheckedChange = onFoilChanged)
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (foil) "Foil" else "Non-foil")
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+            PricingBlock(pricing, pricingLoading, pricingError)
+
+            Spacer(Modifier.height(8.dp))
             Text(
                 "scryfall_id: ${card.id}",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             card.tcgplayerId?.let {
-                Text("tcgplayer_id: $it", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    "tcgplayer_id: $it",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             Spacer(Modifier.height(12.dp))
             TextButton(onClick = onBack) { Text("Back to printings") }
         }
+    }
+}
+
+@Composable
+private fun PricingBlock(
+    pricing: PriceResult?,
+    loading: Boolean,
+    error: String?,
+) {
+    when {
+        loading -> Row(verticalAlignment = Alignment.CenterVertically) {
+            CircularProgressIndicator(modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Looking up price…", style = MaterialTheme.typography.bodyMedium)
+        }
+        error != null -> Text(
+            "Pricing error: $error",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        pricing != null -> {
+            val market = "%.2f".format(pricing.marketCents / 100.0)
+            val bid = "%.2f".format(BidCalculator.startingBidCents(pricing.marketCents) / 100.0)
+            Column {
+                Text("Market: \$$market", style = MaterialTheme.typography.titleMedium)
+                Text("Suggested bid: \$$bid", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                val tag = pricing.source + (if (pricing.isEstimated) " · estimated" else "")
+                Text(
+                    tag,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        else -> Text(
+            "No pricing available for this printing/condition.",
+            style = MaterialTheme.typography.bodyMedium,
+        )
     }
 }
 
