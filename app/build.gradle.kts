@@ -113,6 +113,15 @@ android {
         noCompress.add("bin")
     }
 
+    testOptions {
+        unitTests {
+            // android.util.Log etc. are stubs in the JVM unit-test runtime; return safe
+            // defaults instead of throwing so production code can log without forcing
+            // every unit test to mock Android framework calls.
+            isReturnDefaultValues = true
+        }
+    }
+
     packaging {
         resources {
             excludes += setOf(
